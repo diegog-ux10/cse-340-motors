@@ -1,0 +1,11 @@
+<!-- adds h1, good seo, and a heading for the page! -->
+<% if (title) { %>
+    <h1><%= title %></h1>
+  <% } else {
+    res.redirect('/')
+    } %>
+  
+  <!-- displays error messages -->
+  <%# messages() %>
+
+  <%- grid %>
