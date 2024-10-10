@@ -6,8 +6,6 @@ const Util = {}
  ************************** */
 Util.getNav = async function (req, res, next) {
     let data = await invModel.getClassifications()
-    console.log(data);
-
     let list = "<ul>"
     list += '<li><a href="/" title="Home page">Home</a></li>'
     data.rows.forEach((row) => {
@@ -58,6 +56,56 @@ Util.buildClassificationGrid = async function (data) {
     }
     return grid
 }
+
+/* **************************************
+* Build the single vehicle view HTML
+* ************************************ */
+Util.buildVehicleGrid = async function(data) {
+    if (!Array.isArray(data) || data.length === 0) {
+      return '<p class="notice">Sorry, no matching vehicle could be found.</p>';
+    }
+  
+    const vehicle = data[0];
+  
+    const formatNumber = (number) => new Intl.NumberFormat('en-US').format(number);
+  
+    const vehicleDetails = [
+      { label: 'Price', value: `$${formatNumber(vehicle.inv_price)}` },
+      { label: 'Description', value: vehicle.inv_description },
+      { label: 'Miles', value: formatNumber(vehicle.inv_miles) },
+      { label: 'Color', value: vehicle.inv_color },
+      { label: 'Year', value: vehicle.inv_year }
+    ];
+  
+    const detailsList = vehicleDetails
+      .map(({ label, value }) => `<li><strong>${label}: </strong>${value}</li>`)
+      .join('');
+  
+    return `
+      <div id="singleVehicleWrapper">
+        <img src="${vehicle.inv_image}" 
+             alt="Image of ${vehicle.inv_year} ${vehicle.inv_make} ${vehicle.inv_model}">
+        <div class="vehicle-info-container">
+          <ul id="singleVehicleDetails">
+            <li><h2>${vehicle.inv_make} ${vehicle.inv_model} Details</h2></li>
+            ${detailsList}
+          </ul>
+          <div class="action-buttons">
+            <button class="action-btn">Start My Purchase</button>
+            <button class="action-btn">Contact Us</button>
+            <button class="action-btn">Schedule a Test Drive</button>
+            <button class="action-btn">Apply for Financing</button>
+          </div>
+          <div class="contact-info">
+            <h3>Contact Information</h3>
+            <p>Phone: (555) 123-4567</p>
+            <p>Email: sales@example.com</p>
+            <p>Address: 123 Car Street, Autoville, ST 12345</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
 /* ****************************************
 * Middleware For Handling Errors

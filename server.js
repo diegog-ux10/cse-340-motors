@@ -14,6 +14,9 @@ const static = require("./routes/static")
 const inventoryRoute = require("./routes/inventoryRoute")
 const utilities = require("./utilities/")
 
+// New error controller
+const errorController = require("./controllers/errorController")
+
 /* ***********************
  * Routes
  *************************/
@@ -25,6 +28,9 @@ app.use(static)
 app.get("/", utilities.handleErrors(baseController.buildHome))
 // Inventory routes
 app.use("/inv", inventoryRoute)
+
+// New error trigger route
+app.get("/trigger-error", utilities.handleErrors(errorController.triggerError))
 
 // File Not Found Route - must be last route in list
 app.use(async (req, res, next) => {
