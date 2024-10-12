@@ -5,29 +5,71 @@
 /* ***********************
  * Require Statements
  *************************/
-const baseController = require("./controllers/baseController")
+const env = require("dotenv").config()
+
+const session = require("express-session")
 const express = require("express")
 const expressLayouts = require("express-ejs-layouts")
-const env = require("dotenv").config()
-const app = express()
-const static = require("./routes/static")
+const bodyParser = require("body-parser")
+
+const baseController = require("./controllers/baseController")
 const inventoryRoute = require("./routes/inventoryRoute")
+const accountRoute = require("./routes/accountRoute")
+const pool = require('./database/')
+const static = require("./routes/static")
 const utilities = require("./utilities/")
+
+const app = express()
 
 // New error controller
 const errorController = require("./controllers/errorController")
 
 /* ***********************
- * Routes
+ * Middleware
+ * ************************/
+app.use(session({
+  store: new (require('connect-pg-simple')(session))({
+    createTableIfMissing: true,
+    pool,
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: true,
+  saveUninitialized: true,
+  name: 'sessionId',
+}))
+
+// Express Messages Middleware
+app.use(require('connect-flash')())
+app.use(function(req, res, next){
+  res.locals.messages = require('express-messages')(req, res)
+  next()
+})
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+
+/* ***********************
+ * View Engine and Template
  *************************/
 app.set("view engine", "ejs")
 app.use(expressLayouts)
 app.set("layout", "./layouts/layout") // not at views root
 app.use(static)
 
+/* ***********************
+ * Routes
+ *************************/
+// static route
+app.use(require("./routes/static"))
+
+// index route
 app.get("/", utilities.handleErrors(baseController.buildHome))
+
 // Inventory routes
 app.use("/inv", inventoryRoute)
+
+// account route
+app.use("/account", accountRoute)
 
 // New error trigger route
 app.get("/trigger-error", utilities.handleErrors(errorController.triggerError))
