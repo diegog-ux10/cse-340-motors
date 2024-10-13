@@ -1,26 +1,30 @@
-const accountModel = require("../models/account-model")
 const utilities = require(".")
+const accountModel = require("../models/account-model")
 const { body, validationResult } = require("express-validator")
 const validate = {}
 
 /*  **********************************
- *  REGISTRATION Data Validation Rules
+ *  Registration Data Validation Rules
  * ********************************* */
 validate.registationRules = () => {
   return [
     // firstname is required and must be string
     body("account_firstname")
       .trim()
+      .escape()
+      .notEmpty()
       .isLength({ min: 1 })
       .withMessage("Please provide a first name."), // on error this message is sent.
 
     // lastname is required and must be string
     body("account_lastname")
       .trim()
+      .escape()
+      .notEmpty()
       .isLength({ min: 2 })
       .withMessage("Please provide a last name."), // on error this message is sent.
 
-    // valid email is required and cannot already exist in the DB
+    // valid email is required and cannot already exist in the database
     body("account_email")
       .trim()
       .isEmail()
@@ -28,7 +32,7 @@ validate.registationRules = () => {
       .withMessage("A valid email is required.")
       .custom(async (account_email) => {
         const emailExists = await accountModel.checkExistingEmail(account_email)
-        if (emailExists){
+        if (emailExists) {
           throw new Error("Email exists. Please log in or use different email")
         }
       }),
@@ -36,8 +40,27 @@ validate.registationRules = () => {
     // password is required and must be strong password
     body("account_password")
       .trim()
-      .matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[?!.*@])[A-Za-z\d?!.*@]{12,}$/)
+      .notEmpty()
+      .isStrongPassword({
+        minLength: 12,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+      })
       .withMessage("Password does not meet requirements."),
+
+    // confirm password must match password
+    body("account_password_confirmation")
+      .trim()
+      .notEmpty()
+      .withMessage("Please confirm your password.")
+      .custom((value, { req }) => {
+        if (value !== req.body.account_password) {
+          throw new Error("Passwords do not match");
+        }
+        return true;
+      }),
   ]
 }
 
@@ -107,98 +130,5 @@ validate.checkLoginData = async (req, res, next) => {
   }
   next()
 }
-
-/*  **********************************
- *  account UPDATE rules
- * ********************************* */
-validate.updateAccountRules = () => {
-  return [
-    // firstname is required and must be string
-    body("account_firstname")
-      .trim()
-      .isLength({ min: 1 })
-      .withMessage("Please provide a first name."), // on error this message is sent.
-
-    // lastname is required and must be string
-    body("account_lastname")
-      .trim()
-      .isLength({ min: 2 })
-      .withMessage("Please provide a last name."), // on error this message is sent.
-
-    // valid email is required and cannot already exist in the DB
-    body("account_email")
-      .trim()
-      .isEmail()
-      .normalizeEmail() // refer to validator.js docs
-      .withMessage("A valid email is required."),
-  ]
-}
-
-/*  **********************************
- *  CHANGEPASSWORD Validation Rules
- * ********************************* */
-validate.changePasswordRules = () => {
-  return [
-    // password is required and must be strong password
-    body("account_password")
-      .trim()
-      .matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[?!.*@])[A-Za-z\d?!.*@]{12,}$/)
-      .withMessage("Password does not meet requirements."),
-  ]
-}
-
-/* ******************************
- * Check data and return errors or continue to EDITACCOUNT
- * ***************************** */
-validate.checkEditAccountData = async (req, res, next) => {
-  let nav = await utilities.getNav()
-  const { account_firstname, account_lastname, account_email, account_id } = req.body
-  const account = await accountModel.getAccountById(account_id)
-  if (account_email != account.account_email) {
-    const emailExists = await accountModel.checkExistingEmail(account_email)
-    if (emailExists){
-      errors.push("Email exists. Please log in or use different email")
-    }
-  }
-  let errors = []
-  errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    res.render("./account/editaccount", {
-      errors,
-      title: "Edit Account Information",
-      nav,
-      account_firstname,
-      account_lastname,
-      account_email,
-    })
-    return
-  }
-  next()
-}
-
-// TEST ACCOUNTS
-// account_firstname: Basic
-// account_lastname: Client
-// account_email: basic@340.edu
-// account_password: I@mABas1cCl!3nt
-
-// account_firstname: Happy
-// account_lastname: Employee
-// account_email: happy@340.edu
-// account_password: I@mAnEmpl0y33
-
-// account_firstname: Manager
-// account_lastname: User
-// account_email: manager@340.edu
-// account_password: I@mAnAdm!n1strat0r
-
-// account_firstname: Jojo
-// account_firstname: Jojohn
-// account_lastname: User
-// account_email: jojotest@me.com
-// account_password: abC123!words!
-// hash: $2a$10$1IGsrSZYRJuQ4tEtaQGDo.PemXVtw7eTCSvCJWGtD.sW6e59nk67u
-// account_password: abC123!different
-// hash: $2a$10$BrGEjN42zOvISx1r5qBlve5d7U51JHbmEVryM0g4Y3omk//0FSo9O
 
 module.exports = validate
