@@ -7,7 +7,6 @@
  *************************/
 const env = require("dotenv").config()
 
-const session = require("express-session")
 const express = require("express")
 const expressLayouts = require("express-ejs-layouts")
 const bodyParser = require("body-parser")

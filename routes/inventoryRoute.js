@@ -44,36 +44,4 @@ router.post(
     handleErrors(invController.addVehicle),
 )
 
-// Build inventory management table inventory view
-router.get("/getInventory/:classification_id", handleErrors(invController.getInventoryJSON))
-
-// Build edit vehicle information view
-router.get(
-    "/edit/:inv_id",
-    handleErrors(invController.buildVehicleEdit)
-)
-
-// Post route /update
-router.post(
-    "/update",
-    invValidate.vehicleRules(),
-    invValidate.checkVehicleUpdateData,
-    handleErrors(invController.updateVehicle)
-)
-
-// Build vehicle deletion confirmation view
-router.get(
-    "/delete/:inv_id",
-    handleErrors(invController.buildVehicleDeleteConfirm)
-)
-
-// Post route /delete
-router.post(
-    "/delete",
-    handleErrors(invController.deleteVehicle)
-)
-
-// Route to build broken page
-router.get("/broken", handleErrors(invController.buildBrokenPage));
-
 module.exports = router;
