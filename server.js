@@ -6,7 +6,7 @@
  * Require Statements
  *************************/
 const env = require("dotenv").config()
-
+const session = require("express-session")
 const express = require("express")
 const expressLayouts = require("express-ejs-layouts")
 const bodyParser = require("body-parser")
@@ -32,11 +32,15 @@ app.use(session({
     pool,
   }),
   secret: process.env.SESSION_SECRET,
-  resave: true,
+  resave: false,
   saveUninitialized: true,
   name: 'sessionId',
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // use secure cookies in production
+    maxAge: 1000 * 60 * 60 * 24 // 1 day
+  }
 }))
-
 // Express Messages Middleware
 app.use(require('connect-flash')())
 app.use(function(req, res, next){
