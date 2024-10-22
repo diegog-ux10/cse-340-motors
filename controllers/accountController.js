@@ -37,7 +37,7 @@ async function registerAccount(req, res) {
       errors: null,
     })
   }
-  
+
   // pass (fname, lname, email, hashpass) to model INSERT statement
   const regResult = await accountModel.registerAccount(account_firstname, account_lastname, account_email, hashedPassword)
 
@@ -50,7 +50,7 @@ async function registerAccount(req, res) {
     res.status(201).render("account/login", {
       title: "Login",
       nav,
-      errors:null,
+      errors: null,
     })
   } else {
     req.flash("error", "Sorry, the registration failed.")
@@ -75,4 +75,61 @@ async function buildLogin(req, res, next) {
   })
 }
 
-module.exports = { buildRegister, registerAccount, buildLogin }
+/* ****************************************
+ *  Process login request
+ * ************************************ */
+async function accountLogin(req, res) {
+  let nav = await utilities.getNav()
+  const { account_email, account_password } = req.body
+  const accountData = await accountModel.getAccountByEmail(account_email)
+  if (!accountData) {
+    req.flash("notice", "Please check your credentials and try again.")
+    res.status(400).render("account/login", {
+      title: "Login",
+      nav,
+      errors: null,
+      account_email,
+    })
+    return
+  }
+  try {
+    if (await bcrypt.compare(account_password, accountData.account_password)) {
+      delete accountData.account_password
+      const accessToken = jwt.sign(accountData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 3600 * 1000 })
+      if (process.env.NODE_ENV === 'development') {
+        res.cookie("jwt", accessToken, { httpOnly: true, maxAge: 3600 * 1000 })
+      } else {
+        res.cookie("jwt", accessToken, { httpOnly: true, secure: true, maxAge: 3600 * 1000 })
+      }
+      return res.redirect("/account/")
+    }
+    else {
+      req.flash("message notice", "Please check your credentials and try again.")
+      res.status(400).render("account/login", {
+        title: "Login",
+        nav,
+        errors: null,
+        account_email,
+      })
+    }
+  } catch (error) {
+    throw new Error('Access Forbidden')
+  }
+}
+
+/* ****************************************
+*  Deliver default account view 
+*  (get (route = account/) == (view = account/account))
+* *************************************** */
+async function buildAccount(req, res, next) {
+  let nav = await utilities.getNav()
+  let unreadMessages = await messageModel.getUnreadMessageCountByAccountId(res.locals.accountData.account_id)
+  res.render("account/account", {
+    title: "Account",
+    nav,
+    errors: null,
+    unreadMessages,
+  })
+}
+
+module.exports = { buildRegister, registerAccount, buildLogin, accountLogin, buildAccount, }
