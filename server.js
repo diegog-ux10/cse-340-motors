@@ -5,6 +5,7 @@
 /* ***********************
  * Require Statements
  *************************/
+const cookieParser = require("cookie-parser")
 const env = require("dotenv").config()
 const session = require("express-session")
 const express = require("express")
@@ -50,6 +51,8 @@ app.use(function(req, res, next){
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+app.use(cookieParser())
+app.use(utilities.checkJWTToken)
 
 /* ***********************
  * View Engine and Template
@@ -64,7 +67,7 @@ app.use(static)
  *************************/
 // static route
 app.use(require("./routes/static"))
-
+app.use(cookieParser())
 // index route
 app.get("/", utilities.handleErrors(baseController.buildHome))
 
