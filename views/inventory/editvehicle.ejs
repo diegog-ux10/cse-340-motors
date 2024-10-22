@@ -1,0 +1,101 @@
+<div class="edit-container">
+  <!-- adds h1, good seo, and a heading for the page! -->
+  <% if (title) { %>
+    <h1 class="edit-title"><%= title %></h1>
+  <% } else {
+    res.redirect('/')
+  } %>
+
+  <!-- displays error messages -->
+  <%- messages() %>
+
+  <!-- display errors -->
+  <% if (errors) { %>
+    <ul class="notice">
+      <% errors.array().forEach(error => { %>
+        <li><%= error.msg %></li>
+      <%  }) %>
+    </ul>
+  <% } %>
+
+  <!-- display the contents of the page -->
+  <form id="updateForm" class="form edit-form" action="/inv/update" method="post">
+    <p class="required-notice">*All fields are required</p>
+    <fieldset class="form--fieldset edit-form--fieldset">
+      <div class="form-grid">
+        <!-- CLASSIFICATION DROP DOWN -->
+        <div class="form-group">
+          <label for="classification_id">Classification:</label>
+          <select name="classification_id" id="classification_id" class="form-select">
+            <%- classSelect %>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_make">Make:</label>
+          <input type="text" id="inv_make" name="inv_make" placeholder="Min of 3 characters" 
+                 value="<%= locals.inv_make %>" minlength="3" required class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_model">Model:</label>
+          <input type="text" id="inv_model" name="inv_model" placeholder="Min of 3 characters" 
+                 value="<%= locals.inv_model %>" minlength="3" required class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_year">Year:</label>
+          <input type="text" id="inv_year" name="inv_year" placeholder="4-digit year" 
+                 value="<%= locals.inv_year %>" pattern="^\d{4}$" required class="form-input">
+        </div>
+        
+        <div class="form-group full-width">
+          <label for="inv_description">Description:</label>
+          <textarea id="inv_description" name="inv_description" cols="40" rows="5" 
+                    required class="form-textarea"><%= locals.inv_description %></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_image">Image path:</label>
+          <input type="text" id="inv_image" name="inv_image" value="/images/vehicles/no-image.png" 
+                 pattern="^\/images\/vehicles\/[a-zA-Z0-9\-_]+\.([a-zA-Z]{3,4})$" required class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="inv_thumbnail">Thumbnail path:</label>
+          <input type="text" id="inv_thumbnail" name="inv_thumbnail" value="/images/vehicles/no-image-tn.png" 
+                 pattern="^\/images\/vehicles\/[a-zA-Z0-9\-_]+\.([a-zA-Z]{3,4})$" required class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_price">Price:</label>
+          <input type="text" id="inv_price" name="inv_price" placeholder="Decimal or integer" 
+                 value="<%= locals.inv_price %>" pattern="^\d+(\.\d{1,2})?$" required class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="inv_miles">Miles:</label>
+          <input type="text" id="inv_miles" name="inv_miles" placeholder="Digits only" 
+                 value="<%= locals.inv_miles %>" pattern="^[0-9]+$" required class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="inv_color">Color:</label>
+          <input type="text" id="inv_color" name="inv_color" placeholder="Vehicle color" 
+                 value="<%= locals.inv_color %>" pattern="^[A-Za-z]+$" required class="form-input">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <input type="submit" name="submit" value="Update Vehicle" id="updateBtn" 
+               class="submit-btn" disabled>
+        
+        <input type="hidden" name="inv_id"
+        <% if(locals.inv_id) { %> value="<%= locals.inv_id %>"
+        <% } %>>
+      </div>
+    </fieldset>
+  </form>
+</div>
+
+<script src="/js/update.js"></script>

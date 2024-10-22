@@ -1,0 +1,117 @@
+<!-- heading -->
+<% if (title) { %>
+  <h1><%= title %></h1>
+<% } else {
+  res.redirect('/')
+} %>
+
+<!-- messages -->
+<%- messages() %>
+
+<!-- errors -->
+<% if (errors) { %>
+  <ul class="notice">
+    <% errors.array().forEach(error => { %>
+      <li><%= error.msg %></li>
+    <%  }) %>
+  </ul>
+<% } %>
+
+<div class="forms-container">
+  <!-- Account Update Form -->
+  <div class="form-wrapper">
+    <h2>Account Update</h2>
+    <form class="form update-form" action="/account/update" method="post">
+      <p class="form-required">* All fields are required</p>
+      <fieldset class="form--fieldset">
+        <!-- First Name -->
+        <label for="account_firstname">First Name:</label>
+        <input 
+          type="text" 
+          name="account_firstname" 
+          id="account_firstname" 
+          placeholder="Enter your first name" 
+          value="<%= locals.account_firstname %>" 
+          pattern="^[A-Za-z0-9\-']+$"
+          required
+        >
+        
+        <!-- Last Name -->
+        <label for="account_lastname">Last Name:</label>
+        <input 
+          type="text" 
+          name="account_lastname" 
+          id="account_lastname" 
+          placeholder="Enter your last name" 
+          value="<%= locals.account_lastname %>" 
+          pattern="^[A-Za-z0-9\-']+$"
+          required
+        >
+        
+        <!-- Email -->
+        <label for="account_email">Email:</label>
+        <input 
+          type="email" 
+          name="account_email" 
+          id="account_email" 
+          placeholder="Enter your email" 
+          value="<%= locals.account_email %>" 
+          pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+          required
+        >
+
+        <!-- Hidden account ID -->
+        <input 
+          type="hidden" 
+          name="account_id"
+          <% if (locals.account_id) { %> 
+            value="<%= locals.account_id %>"
+          <% } %>
+        >
+        
+        <!-- Submit button -->
+        <button type="submit" class="form-submit">Update Account</button>
+      </fieldset>
+    </form>
+  </div>
+
+  <!-- Password Change Form -->
+  <div class="form-wrapper">
+    <h2>Change Password</h2>
+    <form class="form password-form" action="/account/password" method="post">
+      <p class="form-required">* Password change is immediate upon submission</p>
+      <fieldset class="form--fieldset">
+        <!-- New Password -->
+        <label for="account_password">New Password:</label>
+        <input 
+          type="password" 
+          name="account_password" 
+          id="account_password" 
+          pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[?!.*@])[A-Za-z\d?!.*@]{12,}$"
+          required
+        >
+        <p class="password-requirements">
+          Password must be at least 12 characters and include:
+          <ul>
+            <li>1 uppercase letter</li>
+            <li>1 lowercase letter</li>
+            <li>1 number</li>
+            <li>1 special character</li>
+          </ul>
+        </p>
+
+        <!-- Hidden account ID -->
+        <input 
+          type="hidden" 
+          name="account_id"
+          <% if (locals.account_id) { %> 
+            value="<%= locals.account_id %>"
+          <% } %>
+        >
+        
+        <!-- Submit button -->
+        <button type="submit" class="form-submit">Change Password</button>
+      </fieldset>
+    </form>
+  </div>
+</div>

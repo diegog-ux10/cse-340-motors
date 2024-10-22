@@ -1,0 +1,64 @@
+<div class="delete-container">
+  <!-- adds h1, good seo, and a heading for the page! -->
+  <% if (title) { %>
+    <h1 class="delete-title"><%= title %></h1>
+  <% } else {
+    res.redirect('/')
+  } %>
+
+  <!-- displays error messages -->
+  <%- messages() %>
+
+  <!-- display errors -->
+  <% if (errors) { %>
+    <ul class="notice">
+      <% errors.array().forEach(error => { %>
+        <li><%= error.msg %></li>
+      <%  }) %>
+    </ul>
+  <% } %>
+
+  <!-- display the contents of the page -->
+  <form id="deleteForm" class="form delete-form" action="/inv/delete" method="post">
+    <div class="warning-message">
+      <p><span class="warning-icon">⚠️</span> Confirm Deletion - The delete is permanent and CANNOT be undone.</p>
+    </div>
+    
+    <fieldset class="form--fieldset delete-form--fieldset">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="inv_make">Make:</label>
+          <input type="text" id="inv_make" name="inv_make" value="<%= locals.inv_make %>" 
+                 class="form-input readonly" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_model">Model:</label>
+          <input type="text" id="inv_model" name="inv_model" value="<%= locals.inv_model %>" 
+                 class="form-input readonly" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_year">Year:</label>
+          <input type="text" id="inv_year" name="inv_year" value="<%= locals.inv_year %>" 
+                 class="form-input readonly" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="inv_price">Price:</label>
+          <input type="text" id="inv_price" name="inv_price" value="<%= locals.inv_price %>" 
+                 class="form-input readonly" readonly>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <input type="submit" name="submit" value="Delete Vehicle" id="deleteBtn" class="delete-btn">
+        <a href="/inv/" class="cancel-btn">Cancel</a>
+        
+        <input type="hidden" name="inv_id"
+        <% if(locals.inv_id) { %> value="<%= locals.inv_id %>"
+        <% } %>>
+      </div>
+    </fieldset>
+  </form>
+</div>

@@ -1,0 +1,53 @@
+<div class="account-container">
+  <!-- adds h1, good seo, and a heading for the page! -->
+  <% if (title) { %>
+    <h1><%= title %></h1>
+  <% } else {
+    res.redirect('/')
+  } %>
+
+  <!-- displays messages -->
+  <%- messages() %>
+
+  <!-- display errors -->
+  <% if (errors) { %>
+    <ul class="notice">
+      <% errors.array().forEach(error => { %>
+        <li><%= error.msg %></li>
+      <%  }) %>
+    </ul>
+  <% } %>
+
+  <% let account = locals.accountData %>
+  <% if (locals.loggedin) { %>
+    <!-- Welcome message for all users -->
+    <h2>Welcome <%= locals.accountData.account_firstname %></h2>
+
+    <!-- Account management link for all users -->
+    <div class="management-links">
+      <a href="/account/edit/<%= locals.accountData.account_id %>" 
+         title="Update account information">
+        Update Account Information
+      </a>
+    </div>
+
+    <!-- Message Center section -->
+    <div class="message-center">
+      <h3>Message Center</h3>
+      <p class="unread-messages">You have <%= locals.unreadMessages %> unread messages</p>
+      <div class="management-links">
+        <a href="/inbox/">Inbox</a>
+      </div>
+    </div>
+
+    <!-- Inventory section - only for Employee/Admin -->
+    <% if (account.account_type == "Employee" || account.account_type == "Admin") { %>
+      <div class="inventory-management">
+        <h3>Inventory Management</h3>
+        <div class="management-links">
+          <a href="/inv/">Manage Inventory</a>
+        </div>
+      </div>
+    <% } %>
+  <% } %>
+</div>

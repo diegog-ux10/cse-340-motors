@@ -154,28 +154,24 @@ Util.handleErrors = fn => (req, res, next) => Promise.resolve(fn(req, res, next)
 * Middleware to check token validity
 **************************************** */
 Util.checkJWTToken = (req, res, next) => {
-  // if there is a token, verify it
   if (req.cookies.jwt) {
-    // pass verify cookie and secret
-    // call back to check for errors
-    jwt.verify(
-      req.cookies.jwt,
-      process.env.ACCESS_TOKEN_SECRET,
-      function (err, accountData) {
-        if (err) {
-          req.flash("Please log in")
-          res.clearCookie("jwt")
-          return res.redirect("/account/login")
-        }
-        res.locals.accountData = accountData
-        res.locals.loggedin = 1
-        next()
-      }
-    )
+   jwt.verify(
+    req.cookies.jwt,
+    process.env.ACCESS_TOKEN_SECRET,
+    function (err, accountData) {
+     if (err) {
+      req.flash("Please log in")
+      res.clearCookie("jwt")
+      return res.redirect("/account/login")
+     }
+     res.locals.accountData = accountData
+     res.locals.loggedin = 1
+     next()
+    })
   } else {
-    next()
+   next()
   }
-}
+ }
 
 /* ****************************************
  *  Check Login
@@ -252,5 +248,25 @@ Util.getArchivedMessages = async function (account_id) {
   }
   return dataTable
 }
+
+/* ****************************************
+ *  Check user authorization, block unauthorized users
+ * ************************************ */
+Util.checkAuthorization = async (req, res, next) => {
+  let auth = 0
+  if (res.locals.loggedin) {
+    const account = res.locals.accountData
+    account.account_type == "Admin" 
+      || account.account_type == "Employee" ? auth = 1 : auth = 0 
+  }
+  if (!auth) {
+    req.flash("notice", "Please log in")
+    res.redirect("/account/login")
+  } else {
+    next()
+  }
+}
+
+
 
 module.exports = Util
