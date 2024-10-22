@@ -138,15 +138,28 @@ async function buildAccountEdit(req, res, next) {
   let nav = await utilities.getNav()
   const account_id = parseInt(req.params.account_id)
   const accountData = await accountModel.getAccountById(account_id)
-  res.render("account/update", {
-    title: "Edit Account",
-    nav,
-    errors: null,
-    account_firstname: accountData.account_firstname,
-    account_lastname: accountData.account_lastname,
-    account_email: accountData.account_email,
-    account_id: accountData.account_id
-  })
+  try {
+    res.render("account/update", {
+      title: "Edit Account",
+      nav,
+      errors: null,
+      account_firstname: accountData.account_firstname,
+      account_lastname: accountData.account_lastname,
+      account_email: accountData.account_email,
+      account_id: accountData.account_id
+    })
+  } catch (error) {
+    req.flash("notice", "Sorry, the account edit failed.")
+    res.status(501).render("account/update", {
+      title: "Edit Account",
+      nav,
+      errors: null,
+      account_firstname: accountData.account_firstname,
+      account_lastname: accountData.account_lastname,
+      account_email: accountData.account_email,
+      account_id: accountData.account_id
+    })
+  }
 }
 
 /* ****************************************
@@ -186,8 +199,15 @@ async function updateAccount(req, res) {
       res.cookie("jwt", accessToken, { httpOnly: true, secure: true, maxAge: 3600 * 1000 })
     }
 
-    let unreadMessages = await messageModel.getUnreadMessageCountByAccountId(account_id)
-    res.redirect("/account")
+    res.status(201).render("account/update", {
+      title: "Edit Account",
+      nav,
+      errors: null,
+      account_firstname,
+      account_lastname,
+      account_email,
+      account_id
+    })
   } else {
     req.flash("notice", "Sorry, the update failed.")
     res.status(501).render("account/update", {
@@ -209,6 +229,9 @@ async function updatePassword(req, res) {
   let nav = await utilities.getNav()
   const { account_password, account_id } = req.body
 
+  // Get account data for repopulating the form
+  const accountData = await accountModel.getAccountById(account_id)
+
   // Hash the password before storing
   let hashedPassword
   try {
@@ -220,6 +243,9 @@ async function updatePassword(req, res) {
       title: "Edit Account",
       nav,
       errors: null,
+      account_firstname: accountData.account_firstname,
+      account_lastname: accountData.account_lastname,
+      account_email: accountData.account_email,
       account_id,
     })
     return
@@ -232,14 +258,24 @@ async function updatePassword(req, res) {
 
   if (updateResult) {
     req.flash("success", `The password has been updated.`)
-    let unreadMessages = await messageModel.getUnreadMessageCountByAccountId(account_id)
-    res.redirect("/account")
+    res.status(201).render("account/update", {
+      title: "Edit Account",
+      nav,
+      errors: null,
+      account_firstname: accountData.account_firstname,
+      account_lastname: accountData.account_lastname,
+      account_email: accountData.account_email,
+      account_id
+    })
   } else {
     req.flash("notice", "Sorry, the password update failed.")
     res.status(501).render("account/update", {
       title: "Edit Account",
       nav,
       errors: null,
+      account_firstname: accountData.account_firstname,
+      account_lastname: accountData.account_lastname,
+      account_email: accountData.account_email,
       account_id
     })
   }
