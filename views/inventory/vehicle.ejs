@@ -1,9 +1,96 @@
 <!-- adds h1, good seo, and a heading for the page! -->
 <% if (title) { %>
-    <h1><%= title %></h1>
-  <% } else {
-    res.redirect('/')
-    } %>
-  
-  <!-- display the contents of the page -->
-  <%- grid %>
+  <h1><%= title %></h1>
+<% } else { res.redirect('/') } %>
+
+<!-- Flash Messages -->
+<% if (messages().success) { %>
+  <div class="success-message">
+    <p><%= messages().success %></p>
+  </div>
+<% } %>
+<% if (messages().notice) { %>
+  <div class="notice-message">
+    <p><%= messages().notice %></p>
+  </div>
+<% } %>
+
+<!-- Error Messages -->
+<% if (errors) { %>
+  <ul class="notice">
+    <% errors.forEach(error => { %>
+      <li><%= error %></li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<!-- Vehicle Grid -->
+<%- grid %>
+
+<!-- Reviews Section -->
+<section class="reviews-section">
+  <h2>Customer Reviews</h2>
+
+  <!-- Display average rating -->
+  <div class="rating-summary">
+    <% if (reviewCount > 0) { %>
+      <p class="average-rating">
+        Average Rating: <%= averageRating %> / 5
+        (<%= reviewCount %> review<%= reviewCount !== 1 ? 's' : '' %>)
+      </p>
+    <% } else { %>
+      <p>No reviews yet</p>
+    <% } %>
+  </div>
+
+  <!-- Add review form (show only if logged in and hasn't reviewed) -->
+  <% if (accountId && !hasReviewed) { %>
+    <div class="review-form">
+      <h3>Write a Review</h3>
+      <form action="/review" method="POST">
+        <input type="hidden" name="inv_id" value="<%= inv_id %>">
+        <div>
+          <label for="rating">Rating:</label>
+          <select name="rating" id="rating" required>
+            <option value="5">5 - Excellent</option>
+            <option value="4">4 - Very Good</option>
+            <option value="3">3 - Good</option>
+            <option value="2">2 - Fair</option>
+            <option value="1">1 - Poor</option>
+          </select>
+        </div>
+        <div>
+          <label for="review_text">Your Review:</label>
+          <textarea 
+            name="review_text" 
+            id="review_text" 
+            required 
+            minlength="10"
+            rows="4"
+            placeholder="Share your experience with this vehicle (minimum 10 characters)"></textarea>
+        </div>
+        <button type="submit">Submit Review</button>
+      </form>
+    </div>
+  <% } else if (!accountId) { %>
+    <p>Please <a href="/account/login">login</a> to write a review.</p>
+  <% } %>
+
+  <!-- Display existing reviews -->
+  <div class="reviews-list">
+    <% if (reviews && reviews.length > 0) { %>
+      <% reviews.forEach(review => { %>
+        <div class="review-item">
+          <div class="review-header">
+            <span class="review-rating">Rating: <%= review.rating %>/5</span>
+            <span class="review-author">by <%= review.account_firstname %> <%= review.account_lastname %></span>
+            <span class="review-date">on <%= review.review_date %></span>
+          </div>
+          <div class="review-text">
+            <%= review.review_text %>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+</section>

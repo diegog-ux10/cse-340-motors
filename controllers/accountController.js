@@ -101,6 +101,12 @@ async function accountLogin(req, res) {
       } else {
         res.cookie("jwt", accessToken, { httpOnly: true, secure: true, maxAge: 3600 * 1000 })
       }
+      // Add these lines to set session data
+      req.session.accountId = accountData.account_id
+      req.session.accountType = accountData.account_type
+      req.session.accountFirstname = accountData.account_firstname
+      req.session.accountLastname = accountData.account_lastname
+      
       return res.redirect("/account/")
     }
     else {
@@ -286,9 +292,10 @@ async function updatePassword(req, res) {
 * *************************************** */
 async function logoutAccount(req, res, next) {
   res.clearCookie("jwt")
+  // Clear session data
+  req.session.destroy()
   res.redirect("/")
 }
-
 module.exports = {
   buildRegister,
   registerAccount,

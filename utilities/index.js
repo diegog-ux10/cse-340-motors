@@ -166,12 +166,17 @@ Util.checkJWTToken = (req, res, next) => {
      }
      res.locals.accountData = accountData
      res.locals.loggedin = 1
+     // Set these session values from the JWT data
+     req.session.accountId = accountData.account_id
+     req.session.accountType = accountData.account_type
+     req.session.accountFirstname = accountData.account_firstname
+     req.session.accountLastname = accountData.account_lastname
      next()
     })
   } else {
    next()
   }
- }
+}
 
 /* ****************************************
  *  Check Login

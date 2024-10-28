@@ -253,3 +253,17 @@ SET inv_thumbnail = REPLACE(inv_thumbnail, '/images/', '/images/vehicles/'),
     inv_image = REPLACE(inv_image, '/images/', '/images/vehicles/')
 WHERE inv_thumbnail NOT LIKE '/images/vehicles/%'
 AND inv_image NOT LIKE '/images/vehicles/%';
+
+CREATE TABLE public.vehicle_reviews (
+    review_id SERIAL PRIMARY KEY,
+    inv_id INTEGER NOT NULL REFERENCES inventory(inv_id),
+    account_id INTEGER NOT NULL REFERENCES account(account_id),
+    review_text TEXT NOT NULL CHECK (length(review_text) >= 10),
+    rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_review UNIQUE (inv_id, account_id)
+);
+
+CREATE INDEX idx_vehicle_reviews_inv_id ON vehicle_reviews(inv_id);
+
+CREATE INDEX idx_vehicle_reviews_account_id ON vehicle_reviews(account_id);

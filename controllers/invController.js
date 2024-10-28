@@ -1,4 +1,5 @@
 const invModel = require("../models/inventory-model")
+const reviewsModel = require("../models/reviews-model")
 const utilities = require("../utilities/")
 
 const invCont = {}
@@ -19,40 +20,54 @@ invCont.buildByClassificationId = async function (req, res, next) {
   })
 }
 
-/* ***************************
- *  Build inventory by single vehicle view
- * ************************** */
 invCont.buildByInvId = async function (req, res, next) {
-  const inv_id = req.params.invId
-  const data = await invModel.getInventoryByInvId(inv_id)
-  const grid = await utilities.buildVehicleGrid(data)
-  let nav = await utilities.getNav()
-  const vehicleMake = data[0].inv_make
-  const vehicleModel = data[0].inv_model
-  const vehicleYear = data[0].inv_year
-  // view -- vehicle.ejs
-  res.render("./inventory/vehicle", {
-    title: vehicleYear + ' ' + vehicleMake + ' ' + vehicleModel,
-    nav,
-    grid,
-    errors: null,
-  })
-}
+  try {
+    const inv_id = req.params.invId
+    
+    // Get account ID from either session or JWT data
+    const accountId = req.session.accountId || (res.locals.accountData ? res.locals.accountData.account_id : null)
+    const accountType = req.session.accountType || (res.locals.accountData ? res.locals.accountData.account_type : null)
 
-/* ***************************
- *  Deliver management view
- * ************************** */
-invCont.buildManagement = async function (req, res, next) {
-  let nav = await utilities.getNav()
-  const classSelect = await utilities.getClassSelect()
+    // Get vehicle data and review data in parallel
+    const [data, reviews, stats] = await Promise.all([
+      invModel.getInventoryByInvId(inv_id),
+      reviewsModel.getReviewsByVehicle(inv_id),
+      reviewsModel.getAverageRating(inv_id)
+    ])
 
-  // view -- management.ejs
-  res.render("./inventory/management", {
-    title: 'Inventory Management',
-    nav,
-    errors: null,
-    classSelect,
-  })
+    if (!data || !data[0]) {
+      req.flash("notice", "Sorry, we couldn't find that vehicle")
+      return res.redirect("/inv")
+    }
+
+    const grid = await utilities.buildVehicleGrid(data)
+    let nav = await utilities.getNav()
+    const vehicleMake = data[0].inv_make
+    const vehicleModel = data[0].inv_model
+    const vehicleYear = data[0].inv_year
+
+    // Check if logged-in user has already reviewed using accountId
+    const hasReviewed = accountId ? 
+      reviews.some(review => review.account_id === parseInt(accountId)) : 
+      false
+
+    // view -- vehicle.ejs
+    res.render("./inventory/vehicle", {
+      title: vehicleYear + ' ' + vehicleMake + ' ' + vehicleModel,
+      nav,
+      grid,
+      inv_id, // Pass inv_id directly
+      reviews,
+      averageRating: stats.average_rating || 0,
+      reviewCount: stats.review_count || 0,
+      hasReviewed,
+      accountId,
+      accountType,
+      errors: null,
+    })
+  } catch (error) {
+    next(error)
+  }
 }
 
 /* ***************************

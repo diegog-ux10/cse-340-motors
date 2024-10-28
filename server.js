@@ -14,6 +14,7 @@ const bodyParser = require("body-parser")
 
 const baseController = require("./controllers/baseController")
 const inventoryRoute = require("./routes/inventoryRoute")
+const reviewsRoute = require("./routes/reviewsRoute")
 const accountRoute = require("./routes/accountRoute")
 const pool = require('./database/')
 const static = require("./routes/static")
@@ -38,10 +39,17 @@ app.use(session({
   name: 'sessionId',
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // use secure cookies in production
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24
   }
 }))
+
+app.use((req, res, next) => {
+  res.locals.accountId = req.session.accountId;
+  res.locals.accountType = req.session.accountType;
+  next();
+})
+
 // Express Messages Middleware
 app.use(require('connect-flash')())
 app.use(function(req, res, next){
@@ -73,6 +81,8 @@ app.get("/", utilities.handleErrors(baseController.buildHome))
 
 // Inventory routes
 app.use("/inv", inventoryRoute)
+
+app.use("/review", reviewsRoute)
 
 // account route
 app.use("/account", accountRoute)
